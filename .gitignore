@@ -21,4 +21,3 @@ ENV/
 
 # Output directories
 output/
-rag_index/
