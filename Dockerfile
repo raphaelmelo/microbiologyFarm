@@ -16,5 +16,7 @@ COPY . /app
 # Make the run script executable
 RUN chmod +x /app/run.sh
 
-# Command to run the application
-ENTRYPOINT ["/app/run.sh"]
+# Command to run the application.
+# Cloud Run will set the PORT environment variable.
+# We use 8080 as a default for local testing.
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
