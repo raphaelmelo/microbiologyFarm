@@ -13,10 +13,7 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 # Copy the rest of the application's code into the container at /app
 COPY . /app
 
-# Make the run script executable
-RUN chmod +x /app/run.sh
-
-# Command to run the application.
-# Cloud Run will set the PORT environment variable.
+# Cloud Run provides the PORT environment variable.
+# The application needs to listen on this port.
 # We use 8080 as a default for local testing.
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
