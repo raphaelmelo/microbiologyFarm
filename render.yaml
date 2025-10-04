@@ -1,0 +1,29 @@
+services:
+  # Backend FastAPI
+  - type: web
+    name: microbiology-backend
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      python create_index.py
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+  # Frontend Streamlit
+  - type: web
+    name: microbiology-frontend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: API_URL
+        fromService:
+          type: web
+          name: microbiology-backend
+          property: url

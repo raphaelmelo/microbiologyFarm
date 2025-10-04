@@ -37,9 +37,13 @@ with st.sidebar:
 st.title("Microbiology Farm Assistant")
 st.markdown("Explore a knowledge base of microbiology articles through conversation.")
 
+# Get the backend API URL from an environment variable, with a local fallback
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/ask")
+
 # Initialize chat history in session state
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "Hello! How can I help you explore the microbiology knowledge base today?"}]
+
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
