@@ -2,11 +2,9 @@ import json
 import os
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Optional
 import faiss
 from sentence_transformers import SentenceTransformer, util
 import numpy as np
-import torch
 from dotenv import load_dotenv
 import google.generativeai as genai
 
