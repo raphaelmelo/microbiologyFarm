@@ -16,7 +16,7 @@ app = FastAPI()
 # --- Pydantic Models ---
 class QueryRequest(BaseModel):
     question: str
-    top_k: int = 5
+    top_k: int = 15
 
 class Answer(BaseModel):
     answer: str

@@ -1,10 +1,26 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: [
-    'build',
-    '-t', 'us-central1-docker.pkg.dev/microbiologyfarm-app/microbiology-repo/microbiology-frontend:latest',
-    '-f', 'Dockerfile.frontend',
-    '.'
-  ]
+  args:
+  - 'build'
+  - '-t'
+  - 'us-central1-docker.pkg.dev/microbiologyfarm-app/microbiology-repo/indexer:latest'
+  - '-f'
+  - 'Dockerfile.indexer'
+  - '.'
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'push'
+  - 'us-central1-docker.pkg.dev/microbiologyfarm-app/microbiology-repo/indexer:latest'
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'run'
+  - '--rm'
+  - '-e'
+  - 'GCP_PROJECT=microbiologyfarm-app'
+  - 'us-central1-docker.pkg.dev/microbiologyfarm-app/microbiology-repo/indexer:latest'
+  - 'python'
+  - 'create_index_cloud.py'
+options:
+  machineType: 'E2_HIGHCPU_8'
 images:
 - 'us-central1-docker.pkg.dev/microbiologyfarm-app/microbiology-repo/microbiology-frontend:latest'

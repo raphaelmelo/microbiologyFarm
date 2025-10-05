@@ -1,61 +1,55 @@
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import json
 import faiss
 from sentence_transformers import SentenceTransformer
 import numpy as np
-import os
 
 def create_index():
     """
     Lê os artigos, gera embeddings para o conteúdo e salva um índice FAISS
-    e os textos correspondentes.
+    e os textos correspondentes, processando um artigo de cada vez para
+    economizar memória.
     """
-    print("Carregando dados...")
-    data = []
-    with open('output/pmc_articles_html.jsonl', 'r') as f:
-        for line in f:
-            data.append(json.loads(line))
-
-    print("Preparando textos...")
-    texts = []
-    for article in data:
-        # Combinar título, resumo e seções em um único texto por artigo
-        title = article.get('title') or ""
-        abstract = article.get('abstract') or ""
-        content = title + " " + abstract
-        for section in article.get('sections', []):
-            content += " " + (section.get('text') or "")
-        texts.append(content)
-
     print("Carregando modelo de embedding...")
-    # Usaremos um modelo pré-treinado para gerar os embeddings
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-
-    print("Gerando embeddings...")
-    # Gera os embeddings para todos os textos
-    embeddings = model.encode(texts, convert_to_tensor=True, show_progress_bar=True)
-    embeddings = embeddings.cpu().numpy()
-
-    # Normalizar embeddings para busca de similaridade de cosseno
-    faiss.normalize_L2(embeddings)
-
-    # Criar o índice FAISS
-    dimension = embeddings.shape[1]
-    index = faiss.IndexFlatIP(dimension) # IP = Inner Product (similaridade de cosseno em vetores normalizados)
-    index.add(embeddings)
+    model = SentenceTransformer('all-mpnet-base-v2')
+    dimension = model.get_sentence_embedding_dimension()
+    index = faiss.IndexFlatIP(dimension)
+    
+    all_texts = []
+    
+    print("Iniciando processamento de artigos em modo streaming...")
+    with open('output/pmc_articles_html.jsonl', 'r') as f:
+        for i, line in enumerate(f):
+            article = json.loads(line)
+            
+            # Combinar título, resumo e seções em um único texto por artigo
+            title = article.get('title') or ""
+            abstract = article.get('abstract') or ""
+            content = title + " " + abstract
+            for section in article.get('sections', []):
+                content += " " + (section.get('text') or "")
+            
+            all_texts.append(content)
+            
+            # Gerar embedding para o artigo atual
+            print(f"Processando artigo {i+1}...")
+            embedding = model.encode([content], convert_to_tensor=True, show_progress_bar=False)
+            embedding = embedding.cpu().numpy()
+            
+            # Normalizar e adicionar ao índice
+            faiss.normalize_L2(embedding)
+            index.add(embedding)
 
     print("Salvando o índice e os textos...")
-    # Criar diretório se não existir
     os.makedirs('rag_index', exist_ok=True)
-    
-    # Salvar o índice FAISS
     faiss.write_index(index, 'rag_index/articles.index')
 
     print("Salvando o modelo de embedding localmente...")
     model.save('rag_index/model')
 
-    # Salvar os textos para referência futura
     with open('rag_index/texts.json', 'w') as f:
-        json.dump(texts, f)
+        json.dump(all_texts, f)
 
     print("Indexação concluída!")
 
