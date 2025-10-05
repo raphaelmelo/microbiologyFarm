@@ -69,7 +69,7 @@ if prompt := st.chat_input("What would you like to know?"):
         with st.spinner("Thinking..."):
             try:
                 # Call the FastAPI backend
-                response = requests.post("http://127.0.0.1:8000/ask", json={"question": prompt})
+                response = requests.post(API_URL, json={"question": prompt})
                 response.raise_for_status()
                 
                 data = response.json()
