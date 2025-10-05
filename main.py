@@ -56,7 +56,8 @@ async def startup_event():
         app.state.index = None
 
     print("Carregando modelo de embedding...")
-    app.state.model = SentenceTransformer('all-MiniLM-L6-v2')
+    # Carrega o modelo de um diretório local em vez de baixar
+    app.state.model = SentenceTransformer('rag_index/model')
     
     print("--- Modelos e dados carregados com sucesso! ---")
 

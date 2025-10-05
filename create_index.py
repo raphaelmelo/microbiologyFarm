@@ -50,6 +50,9 @@ def create_index():
     # Salvar o índice FAISS
     faiss.write_index(index, 'rag_index/articles.index')
 
+    print("Salvando o modelo de embedding localmente...")
+    model.save('rag_index/model')
+
     # Salvar os textos para referência futura
     with open('rag_index/texts.json', 'w') as f:
         json.dump(texts, f)
